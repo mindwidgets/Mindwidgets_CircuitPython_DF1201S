@@ -111,7 +111,7 @@ Usage Example
 
 Documentation
 =============
-API documentation for this library can be found on `Read the Docs <https://circuitpython-df1201s.readthedocs.io/>`_.
+API documentation for this library can be found on `Read the Docs <https://mindwidgets-circuitpython-df1201s-library.readthedocs.io/>`_.
 
 For information on building library documentation, please check out
 `this guide <https://learn.adafruit.com/creating-and-sharing-a-circuitpython-library/sharing-our-docs-on-readthedocs#sphinx-5-1>`_.
