@@ -124,7 +124,9 @@ class DF1201S(object):
 
     @property
     def connected(self) -> bool:
-        """True if the DFPlayer is connected."""
+        """
+        :return: True if the DFPlayer is connected.
+        """
         return self._send_command("")
 
     def set_baud_rate(self, rate: int) -> bool:
@@ -141,7 +143,9 @@ class DF1201S(object):
 
     @property
     def volume(self) -> float:
-        """Volume level, as a float between 0 and 1."""
+        """
+        :return: Volume level, as a float between 0 and 1.
+        """
         response = self._send_query("VOL", "?")
         df_volume = self._unwrap_int(response[7:-1])
         if df_volume < 0:
@@ -339,25 +343,35 @@ class DF1201S(object):
 
     @property
     def file_number(self) -> int:
-        """The file number of the currently playing file."""
+        """
+        :return: The file number of the currently playing file.
+        """
         return self._unwrap_int(self._send_query("QUERY", 1))
 
     @property
     def file_name(self) -> str:
-        """The file name of the currently playing file."""
+        """
+        :return: The file name of the currently playing file.
+        """
         return self._send_query("QUERY", 5)
 
     @property
     def played_time(self) -> int:
-        """The number of seconds the current sound has played."""
+        """
+        :return: The number of seconds the current sound has played.
+        """
         return self._unwrap_int(self._send_query("QUERY", 3))
 
     @property
     def total_time(self) -> int:
-        """The length of the current sound in seconds."""
+        """
+        :return: The length of the current sound in seconds.
+        """
         return self._unwrap_int(self._send_query("QUERY", 4))
 
     @property
     def playing(self) -> bool:
-        """True if a sound is currently playing."""
+        """
+        :return: True if a sound is currently playing.
+        """
         return self.played_time < self.total_time
