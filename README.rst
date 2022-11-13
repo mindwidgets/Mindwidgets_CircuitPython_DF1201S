@@ -2,7 +2,7 @@ Introduction
 ============
 
 
-.. image:: https://readthedocs.org/projects/mindwidgets-circuitpython-df1201s/badge/?version=latest
+.. image:: https://readthedocs.org/projects/mindwidgets-circuitpython-df1201s-library/badge/?version=latest
     :target: https://circuitpython-df1201s.readthedocs.io/
     :alt: Documentation Status
 
