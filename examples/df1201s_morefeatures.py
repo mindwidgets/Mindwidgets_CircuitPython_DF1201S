@@ -2,8 +2,8 @@
 #
 # SPDX-License-Identifier: MIT
 
-import board
 import time
+import board
 import busio
 from mindwidgets_df1201s import DF1201S
 

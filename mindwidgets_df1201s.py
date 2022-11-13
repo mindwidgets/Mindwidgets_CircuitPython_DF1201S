@@ -38,8 +38,32 @@ _DFPLAYER_VOLUME_MAX = const(30)
 _OK_RESPONSE = "OK"
 
 
-class DF1201S(object):
+def _unwrap_int(value: str) -> int:
+    """
+    Convert a string to an int if it only contains digits, otherwise return -1.
+
+    :param str value: the string to attempt to convert to an int
+    :return: the int value of the string, or -1 if it could not be converted
+    """
+    if value.isdigit():
+        return int(value)
+    return -1
+
+
+def _map_volume(volume: float) -> int:
+    """
+    Map 0.0 to 1.0 volume value to DFPlayer's volume range.
+
+    :param float volume: the volume, from 0 to 1, to convert
+    :return: the volume mapped to a valid DFPlayer Pro volume value
+    """
+    return max(min(int(volume * _DFPLAYER_VOLUME_MAX), _DFPLAYER_VOLUME_MAX), 0)
+
+
+class DF1201S:
     """Driver for DFRobot DFPlayer Pro (DF1201S) MP3 player with onboard storage."""
+
+    # pylint: disable=too-many-public-methods
 
     PLAYMODE_REPEAT_ONE_SONG = const(1)
     """play_mode: Repeat one sound."""
@@ -56,7 +80,7 @@ class DF1201S(object):
         """
         Initialize the DFPlayer connection.
 
-        :param busio.UART uart: the serial connection to the DFPlayer 
+        :param busio.UART uart: the serial connection to the DFPlayer
         """
         self._uart = uart
         if not self.connected:
@@ -66,14 +90,14 @@ class DF1201S(object):
         """
         Send AT command and return the response.
 
-        :param str command: the command to send (without AT prefix or CR\LF)
+        :param str command: the command to send (without AT prefix or CR/LF)
         :param arg: optional command argument
-        :return: the response to the command (CR\LF removed)
+        :return: the response to the command (CR/LF removed)
         """
         # format the AT command, adding the argument if given
         at_command = "AT"
         if command != "":
-            if arg != None:
+            if arg is not None:
                 at_command = f"AT+{command}={arg}"
             else:
                 at_command = f"AT+{command}"
@@ -86,7 +110,7 @@ class DF1201S(object):
         # read the response and strip the \r\n
         response = self._uart.readline()
 
-        parsed = "" if response == None else str(response[0:-2], 'ascii')
+        parsed = "" if response is None else str(response[0:-2], "ascii")
 
         print("DFPlayer Response: ", parsed)
 
@@ -96,42 +120,20 @@ class DF1201S(object):
         """
         Send AT command and return true for an OK response.
 
-        :param str command: the command to send (without AT prefix or CR\LF)
+        :param str command: the command to send (without AT prefix or CR/LF)
         :param arg: optional command argument
         :return: True if the command was successful
         """
         return self._send_query(command, arg) == _OK_RESPONSE
 
-    def _unwrap_int(self, value: str) -> int:
-        """
-        Convert a string to an int if it only contains digits, otherwise return -1.
-
-        :param str value: the string to attempt to convert to an int
-        :return: the int value of the string, or -1 if it could not be converted
-        """
-        if value.isdigit():
-            return int(value)
-        return -1
-
-    def _map_volume(self, volume: float) -> int:
-        """
-        Map 0.0 to 1.0 volume value to DFPlayer's volume range.
-
-        :param float volume: the volume, from 0 to 1, to convert
-        :return: the volume mapped to a valid DFPlayer Pro volume value
-        """
-        return max(min(int(volume * _DFPLAYER_VOLUME_MAX), _DFPLAYER_VOLUME_MAX), 0)
-
     @property
     def connected(self) -> bool:
-        """
-        :return: True if the DFPlayer is connected.
-        """
+        """True if the DFPlayer is connected."""
         return self._send_command("")
 
     def set_baud_rate(self, rate: int) -> bool:
         """
-        Set baud rate for the serial DFPlayer connection.        
+        Set baud rate for the serial DFPlayer connection.
 
         .. note:: Persists after power off.
 
@@ -143,11 +145,9 @@ class DF1201S(object):
 
     @property
     def volume(self) -> float:
-        """
-        :return: Volume level, as a float between 0 and 1.
-        """
+        """Volume level, as a float between 0 and 1."""
         response = self._send_query("VOL", "?")
-        df_volume = self._unwrap_int(response[7:-1])
+        df_volume = _unwrap_int(response[7:-1])
         if df_volume < 0:
             return 0
 
@@ -163,7 +163,7 @@ class DF1201S(object):
         :param float volume: the volume level, as a float between 0 and 1.
         :return: True if the volume was set.
         """
-        df_volume = self._map_volume(volume)
+        df_volume = _map_volume(volume)
         return self._send_command("VOL", df_volume)
 
     def increase_volume(self, increment: float) -> bool:
@@ -175,7 +175,7 @@ class DF1201S(object):
         :param float increment: the amount to increase the volume, as a float between 0 and 1.
         :return: True if the volume was increased.
         """
-        df_volume = self._map_volume(increment)
+        df_volume = _map_volume(increment)
         return self._send_command("VOL", f"+{df_volume}")
 
     def decrease_volume(self, decrement: float) -> bool:
@@ -187,7 +187,7 @@ class DF1201S(object):
         :param float decrement: the amount to decrement the volume, as a float between 0 and 1.
         :return: True if the volume was decreased.
         """
-        df_volume = self._map_volume(decrement)
+        df_volume = _map_volume(decrement)
         return self._send_command("VOL", f"-{df_volume}")
 
     def enable_led(self) -> bool:
@@ -251,20 +251,22 @@ class DF1201S(object):
         """
         Returns the current play mode.
 
-        :return: One of the play mode constants (`PLAYMODE_REPEAT_ONE_SONG`, `PLAYMODE_REPEAT_ALL`, or `PLAYMODE_PLAY_ONCE`).
+        :return: One of the play mode constants, `PLAYMODE_REPEAT_ONE_SONG`, `PLAYMODE_REPEAT_ALL`,
+            or `PLAYMODE_PLAY_ONCE`.
             `PLAYMODE_RANDOM` can be set, but this function will return -1. Bug in the device?
             `PLAYMODE_REPEAT_FOLDER` can be set, but this function will return 3. Bug in the device?
 
         """
         response = self._send_query("PLAYMODE", "?")
-        return self._unwrap_int(response[10:])
+        return _unwrap_int(response[10:])
 
     @play_mode.setter
     def play_mode(self, new_mode: int) -> bool:
         """
         Set the play mode.
 
-        :param int new_mode: One of `PLAYMODE_REPEAT_ONE_SONG`, `PLAYMODE_REPEAT_ALL`, `PLAYMODE_PLAY_ONCE`, `PLAYMODE_RANDOM`, or `PLAYMODE_REPEAT_FOLDER`.
+        :param int new_mode: One of `PLAYMODE_REPEAT_ONE_SONG`, `PLAYMODE_REPEAT_ALL`,
+            `PLAYMODE_PLAY_ONCE`, `PLAYMODE_RANDOM`, or `PLAYMODE_REPEAT_FOLDER`.
         :return: True if the play mode was set.
         """
         return self._send_command("PLAYMODE", new_mode)
@@ -289,7 +291,8 @@ class DF1201S(object):
         """
         Play the sound at the given file number.
 
-        .. note:: Plays the first sound if the file number is invalid. I don't see a way to turn off this behavior.
+        .. note:: Plays the first sound if the file number is invalid. I don't see a way to turn
+            off this behavior.
 
         :param int file_number: the file number to play.
         :return: True if the given file number is playing, False if the first file is playing.
@@ -300,7 +303,8 @@ class DF1201S(object):
         """
         Play the sound with the given file name.
 
-        .. note:: Plays the first sound if the file name is invalid. I don't see a way to turn off this behavior.
+        .. note:: Plays the first sound if the file name is invalid. I don't see a way to turn
+            off this behavior.
 
         :param str file_name: the file name to play.
         :return: True if the given file is playing, False if the first file if playing.
@@ -329,49 +333,40 @@ class DF1201S(object):
         """
         Start playing the current sound at a specific time offset.
 
-        .. note:: If the offset exceeds the sound length, this function still returns `True` and the sound stops.
+        .. note:: If the offset exceeds the sound length, this function still returns `True`
+            and the sound stops.
 
         :param int seconds: the time offset, in seconds.
-        :return: True if the current offset was set. 
+        :return: True if the current offset was set.
         """
         return self._send_command("TIME", seconds)
 
     @property
     def total_files(self) -> int:
         """The total count of sound files available."""
-        return self._unwrap_int(self._send_query("QUERY", 2))
+        return _unwrap_int(self._send_query("QUERY", 2))
 
     @property
     def file_number(self) -> int:
-        """
-        :return: The file number of the currently playing file.
-        """
-        return self._unwrap_int(self._send_query("QUERY", 1))
+        """The file number of the currently playing file."""
+        return _unwrap_int(self._send_query("QUERY", 1))
 
     @property
     def file_name(self) -> str:
-        """
-        :return: The file name of the currently playing file.
-        """
+        """The file name of the currently playing file."""
         return self._send_query("QUERY", 5)
 
     @property
     def played_time(self) -> int:
-        """
-        :return: The number of seconds the current sound has played.
-        """
-        return self._unwrap_int(self._send_query("QUERY", 3))
+        """The number of seconds the current sound has played."""
+        return _unwrap_int(self._send_query("QUERY", 3))
 
     @property
     def total_time(self) -> int:
-        """
-        :return: The length of the current sound in seconds.
-        """
-        return self._unwrap_int(self._send_query("QUERY", 4))
+        """The length of the current sound in seconds."""
+        return _unwrap_int(self._send_query("QUERY", 4))
 
     @property
     def playing(self) -> bool:
-        """
-        :return: True if a sound is currently playing.
-        """
+        """True if a sound is currently playing."""
         return self.played_time < self.total_time

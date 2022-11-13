@@ -99,7 +99,7 @@ Usage Example
     uart = busio.UART(tx=board.GP16, rx=board.GP17, baudrate=115200)
 
     df_player = DF1201S(uart)
-    df_player.volume = 0.2    
+    df_player.volume = 0.2
     df_player.play_mode = DF1201S.PLAYMODE_PLAY_ONCE
 
     if not df_player.play_next():

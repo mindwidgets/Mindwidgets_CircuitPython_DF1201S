@@ -11,7 +11,7 @@ sound stored on the DFPlayer Pro.
 More Features
 --------------
 
-Explore more features of the DFPlayer Pro, including volume adjustment, play modes, 
+Explore more features of the DFPlayer Pro, including volume adjustment, play modes,
 and play status.
 
 .. literalInclude:: ../examples/df1201s_morefeatures.py
