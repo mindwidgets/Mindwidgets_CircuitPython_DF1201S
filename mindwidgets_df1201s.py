@@ -105,7 +105,7 @@ class DF1201S:
         print("DFPlayer Command: ", at_command)
 
         # send the AT command
-        self._uart.write(bytearray(f"{at_command}\r\n"))
+        self._uart.write(bytearray(f"{at_command}\r\n", "ascii"))
 
         # read the response and strip the \r\n
         response = self._uart.readline()
