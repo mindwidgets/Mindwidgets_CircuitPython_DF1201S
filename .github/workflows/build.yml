@@ -22,10 +22,11 @@ jobs:
         awk -F '\/' '{ print tolower($2) }' |
         tr '_' '-'
         )
-    - name: Set up Python 3.x
+    - name: Set up Python 3.11
+      # Hard code to 3.11 to fix setuptools bug in 3.12
       uses: actions/setup-python@v2
       with:
-        python-version: "3.x"
+        python-version: "3.11"
     - name: Versions
       run: |
         python3 --version
